@@ -32,7 +32,7 @@ void Visualizer::SendGameState(const json& gameState) {
     }
 }
 
-json Visualizer::MakeGameState(Arena* arena, Bot* blueBot, Bot* orangeBot)
+json Visualizer::MakeGameState(Arena* arena, PythonBot* blueBot, PythonBot* orangeBot)
 {
     const BallState& ballState = arena->ball->GetState();
     Vec ballPos = ballState.pos;

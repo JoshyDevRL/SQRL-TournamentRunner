@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../RocketSim/src/Sim/Arena/Arena.h"
-#include "bot.h"
+#include "python_bot.h"
 #include "render.h"
 
 using namespace RocketSim;
@@ -9,18 +9,21 @@ using namespace RocketSim;
 class Match {
 public:
 	bool render;
+	int ticks;
 	int blueScore;
 	int orangeScore;
+	float _kickoffTime;
+	bool isKickoff;
 
 	std::unique_ptr<Visualizer> visualizer;
 
 	Arena* arena;
-	Bot* blueBot;
-	Bot* orangeBot;
+	PythonBot* blueBot;
+	PythonBot* orangeBot;
 
-	Match(Bot* blueBot, Bot* orangeBot, bool render = false);
+	Match(PythonBot* blueBot, PythonBot* orangeBot, int ticks, bool render = false);
 	~Match();
 
-	void Run(int ticks);
+	void Run();
 
 };

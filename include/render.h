@@ -5,7 +5,7 @@
 #include <ws2tcpip.h>
 #include "../JSON/json.hpp"
 #include "../RocketSim/src/Sim/Arena/Arena.h"
-#include "bot.h"
+#include "python_bot.h"
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -25,6 +25,6 @@ public:
 
 	void SendGameState(const json& gameState);
 
-	static json MakeGameState(Arena* arena, Bot* blueBot, Bot* orangeBot);
+	static json MakeGameState(Arena* arena, PythonBot* blueBot, PythonBot* orangeBot);
 
 };
