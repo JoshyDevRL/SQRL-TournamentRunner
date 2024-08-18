@@ -18,7 +18,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 
 ## Python Bot Support
 - Python 3.10 or higher
-- the `sqrl_python_interface` python package
+- the [sqrl_python_interface](https://pypi.org/project/sqrl-python-interface) python package
 
 # Features
 - Can start a 1v1 match for x amount of ticks (1 second = 120 ticks). Default is 36.000 ticks (5 minutes)
@@ -26,6 +26,12 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - **--ticks x** flag to set the desired amount of ticks to run a match for, where **x** is the amount of ticks > [OPTIONAL]
 - **--render** flag to render the match happening in [RocketSimVis](https://github.com/ZealanL/RocketSimVis) (Slows down the game to real time) > [OPTIONAL]
 - **--copy** flag to copy your bot folder to the exe path so it doesn't modify your main code files > [OPTIONAL]
+
+# Limitations
+- Currently does not have ball-prediction [FIXING NEXT UPDATE]
+- If a bot uses quickchats it will break [FIXING NEXT UPDATE]
+- 1v1 matches only
+- Can't use different bots for each team [FIXING NEXT UPDATE]
 
 # Performance
 > **1 thread | 1v1 | Simple C++ ATBA | 36.000 ticks (5 minutes) |> ~150 milliseconds**\
