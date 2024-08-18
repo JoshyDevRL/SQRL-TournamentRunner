@@ -5,8 +5,8 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - Code has never been optimized, will come soon
 
 # Requirements
-- CMake > [REQUIRED]
-- Visual Studio 2019 or Visual Studio 2022 > [REQUIRED]
+- CMake
+- Visual Studio 2019 or Visual Studio 2022
 
 # Use
 1. Clone this repo using `git clone https://github.com/JoshyDevRL/SQRL-TournamentRunner` or [Download](https://github.com/JoshyDevRL/SQRL-TournamentRunner/archive/refs/heads/main.zip) the repo and extract the zip into a folder
@@ -24,7 +24,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - Can start a 1v1 match for x amount of ticks (1 second = 120 ticks). Default is 36.000 ticks (5 minutes)
 - **--file path_to_your_bot_py** flag guides the program to your bot file > [REQUIRED]
 - **--ticks x** flag to set the desired amount of ticks to run a match for, where **x** is the amount of ticks > [OPTIONAL]
-- **--render** flag to visualize/render the match happening in [RocketSimVis](https://github.com/ZealanL/RocketSimVis) (Slows down the time to real time) > [OPTIONAL]
+- **--render** flag to render the match happening in [RocketSimVis](https://github.com/ZealanL/RocketSimVis) (Slows down the game to real time) > [OPTIONAL]
 - **--copy** flag to copy your bot folder to the exe path so it doesn't modify your main code files > [OPTIONAL]
 
 # Performance
