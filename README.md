@@ -32,10 +32,12 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - If a bot uses quickchats it will break [FIXING NEXT UPDATE]
 - 1v1 matches only
 - Can't use different bots for each team [FIXING NEXT UPDATE]
+- Boostpad states not being sent correctly to the visualizer
 
 # Performance
-> **1 thread | 1v1 | Simple C++ ATBA | 36.000 ticks (5 minutes) |> ~150 milliseconds**\
-> **1 thread | 1v1 | SkillQuest PY BOT | 36.000 ticks (5 minutes) |> ~4000 milliseconds**
+> **1 thread | 1v1 | Simple C++ ATBA | 36.000 ticks (5 minutes) | Named Pipe |> ~150 milliseconds**\
+> **1 thread | 1v1 | SkillQuest PY BOT | 36.000 ticks (5 minutes) | Named Pipe |> ~4.000 milliseconds**\
+> **1 thread | 1v1 | SkillQuest PY BOT + Ball Prediction | 36.000 ticks (5 minutes) | Named Pipe |> ~170.000 milliseconds**
 
 # Near-Future
 - Switch from Named Pipes to Shared Memory for the Python Interface
