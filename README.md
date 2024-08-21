@@ -33,6 +33,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - 1v1 matches only
 - Can't use different bots for each team [FIXING NEXT UPDATE]
 - Boostpad states not being sent correctly to the visualizer
+- Gametickpacket does not posses all the data [FIXING NEXT UPDATE]
 
 # Performance
 > **1 thread | 1v1 | Simple C++ ATBA | 36.000 ticks (5 minutes) | Named Pipe |> ~150 milliseconds**\
