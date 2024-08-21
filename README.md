@@ -14,7 +14,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
   - `mkdir build`
   - `cd build`
   - `cmake ..`
-4. Open the generated solution in the build folder and build the exe with Release mode
+3. Open the generated solution in the build folder and build the exe with Release mode
 
 ## Python Bot Support
 - Python 3.10 or higher
@@ -38,6 +38,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 > **1 thread | 1v1 | SkillQuest PY BOT | 36.000 ticks (5 minutes) |> ~4000 milliseconds**
 
 # Near-Future
+- Switch from Named Pipes to Shared Memory for the Python Interface
 - Add Full RLBot Python bot support (GoslingUtils and SkillQuest are already supported!)
 - Add more game modes; 2v2 and 3v3
 - Simple TUI (text-based user interface)
