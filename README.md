@@ -42,6 +42,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 
 # Near-Future
 - Switch from Named Pipes to Shared Memory for the Python Interface
+- Add player info tracker, eg. shots, saves, assists
 - Add Full RLBot Python bot support (GoslingUtils and SkillQuest are already supported!)
 - Add more game modes; 2v2 and 3v3
 - Simple TUI (text-based user interface)
