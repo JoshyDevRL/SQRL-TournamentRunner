@@ -40,7 +40,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 > **1 thread | 1v1 | Simple C++ ATBA | 36.000 ticks (5 minutes) | Named Pipe |> ~150 ms**\
 > **1 thread | 1v1 | SkillQuest PY BOT | 36.000 ticks (5 minutes) | Named Pipe |> ~4.000 ms**\
 > **1 thread | 1v1 | SkillQuest PY BOT + Ball Prediction | 36.000 ticks (5 minutes) | Named Pipe |> ~170.000 ms**
-> **1 thread | 1v1 | SkillQuest PY BOT | 36.000 ticks (5 minutes) | Shared Memory |> ~500 ms**\
+> **1 thread | 1v1 | SkillQuest PY BOT | 36.000 ticks (5 minutes) | Shared Memory |> ~250 ms**\
 
 # Near-Future
 - Switch from Named Pipes to Shared Memory for the Python Interface
