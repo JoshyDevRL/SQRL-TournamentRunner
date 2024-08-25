@@ -28,14 +28,15 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - **--copy** flag to copy your bot folder to the exe path so it doesn't modify your main code files > [OPTIONAL]
 
 # Limitations
-- Weird desync issues with python [FIXING NEXT UPDATE]
-- Currently does not have ball-prediction [FIXING NEXT UPDATE]
-- If a bot uses quickchats it will break [FIXING NEXT UPDATE]
 - 1v1 matches only
-- Can't use different bots for each team [FIXING NEXT UPDATE]
-- Boostpad states not being sent correctly to the visualizer
-- Gametickpacket does not posses all the data (Currently has enough to support 99% of bots) [FIXING SOON]
-- Overtime does not work [FIXING NEXT UPDATE]
+- Boostpad states not being sent correctly to the visualizer [FIXING NEXT UPDATE]
+- Gametickpacket does not posses all the data (Currently has enough to support 99% of bots) [FIXING NEXT UPDATE]
+- ~~Weird desync issues with python~~
+- ~~Currently does not have ball-prediction~~
+- ~~If a bot uses quickchats it will break~~
+- ~~Can't use different bots for each team~~
+- ~~Overtime does not work~~
+- ~~Kickoff bug where the timer is incorrect~~
 
 # Performance
 > **1 thread | 1v1 | Simple C++ ATBA | 36.000 ticks (5 minutes) | Named Pipe |> ~150 ms**\
@@ -45,14 +46,15 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 > **1 thread | 1v1 | SkillQuest PY BOT + Ball Prediction | 36.000 ticks (5 minutes) | Shared Memory |> ~115.000 ms**
 
 # Near-Future
-- ~~Switch from Named Pipes to Shared Memory for the Python Interface~~
-- Add player info tracker, eg. shots, saves, assists
-- ~~Add support for Skillquest and GoslingUtils bots~~
+- Add player info tracker, eg. shots, saves, assists [ADDING NEXT UPDATE]
+- Simple TUI (text-based user interface)
 - Add Full RLBot Python bot support
 - Add more game modes; 2v2 and 3v3
-- Simple TUI (text-based user interface)
 - Tournament runner framework
 - Multiple threads and games at the same time
+- Seperate and/or disable printing from the python agents
+- ~~Add support for Skillquest and GoslingUtils bots~~
+- ~~Switch from Named Pipes to Shared Memory for the Python Interface~~
 
 # Future
 - Optimize framework / code
@@ -69,6 +71,17 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - Feel free to ask me questions about this project on discord, my username: **joshydev**
 
 # Commits
+
+## Commit [ 554b41c ]
+- Replaced --file flag with --blue & --orange (It's possible to use different bots for each team now)
+- Switched from Named Pipes to Shared Memory
+- Started working on the event tracker, eg. shots, saves, goals
+- Changed structure from PythonBot containing a seperate PythonInterface to a single PythonInterface containing all the PythonBots
+- Added the 1-tick delay from Rocket League
+- Added realistic overtime and game ending functionality (Only end game when ball is on ground and timer ran out or continue if the score is equal and reset to kickoff position)
+- Fixed kickoff bug where the timer was incorrect
+- Added feature that automatically gets the name of the bot from the .cfg file
+- Send match id instead of pipe name to python sqrl_interface
 
 ## Commit [ ecb5fef ]
 - Add full support for GoslingUtils and SkillQuest bots
