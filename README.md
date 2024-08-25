@@ -34,19 +34,21 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - 1v1 matches only
 - Can't use different bots for each team [FIXING NEXT UPDATE]
 - Boostpad states not being sent correctly to the visualizer
-- Gametickpacket does not posses all the data [FIXING NEXT UPDATE]
+- Gametickpacket does not posses all the data (Currently has enough to support 99% of bots) [FIXING SOON]
 - Overtime does not work [FIXING NEXT UPDATE]
 
 # Performance
 > **1 thread | 1v1 | Simple C++ ATBA | 36.000 ticks (5 minutes) | Named Pipe |> ~150 ms**\
 > **1 thread | 1v1 | SkillQuest PY BOT | 36.000 ticks (5 minutes) | Named Pipe |> ~4.000 ms**\
-> **1 thread | 1v1 | SkillQuest PY BOT + Ball Prediction | 36.000 ticks (5 minutes) | Named Pipe |> ~170.000 ms**
+> **1 thread | 1v1 | SkillQuest PY BOT + Ball Prediction | 36.000 ticks (5 minutes) | Named Pipe |> ~170.000 ms**\
 > **1 thread | 1v1 | SkillQuest PY BOT | 36.000 ticks (5 minutes) | Shared Memory |> ~250 ms**\
+> **1 thread | 1v1 | SkillQuest PY BOT + Ball Prediction | 36.000 ticks (5 minutes) | Shared Memory |> ~115.000 ms**
 
 # Near-Future
-- Switch from Named Pipes to Shared Memory for the Python Interface
+- ~~Switch from Named Pipes to Shared Memory for the Python Interface~~
 - Add player info tracker, eg. shots, saves, assists
-- Add Full RLBot Python bot support (GoslingUtils and SkillQuest are already supported!)
+- ~~Add support for Skillquest and GoslingUtils bots~~
+- Add Full RLBot Python bot support
 - Add more game modes; 2v2 and 3v3
 - Simple TUI (text-based user interface)
 - Tournament runner framework
@@ -58,6 +60,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - Fully functional Replay System
 - Add RLBot C# bot support
 - Add RLBot C++ bot support
+- Add RLBot ML bot support
 - API for GUI interface
 - Add more variety game modes, eg. uneven teams and some extra-modes
 
