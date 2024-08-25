@@ -28,6 +28,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - **--copy** flag to copy your bot folder to the exe path so it doesn't modify your main code files > [OPTIONAL]
 
 # Limitations
+- Weird desync issues with python [FIXING NEXT UPDATE]
 - Currently does not have ball-prediction [FIXING NEXT UPDATE]
 - If a bot uses quickchats it will break [FIXING NEXT UPDATE]
 - 1v1 matches only
