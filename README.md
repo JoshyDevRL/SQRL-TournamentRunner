@@ -31,6 +31,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - 1v1 matches only
 - Boostpad states not being sent correctly to the visualizer [FIXING NEXT UPDATE]
 - Gametickpacket does not posses all the data (Currently has enough to support 99% of bots) [FIXING NEXT UPDATE]
+- Bug where the main program does not exist, most likely because of the python interface exiting already?
 - ~~Weird desync issues with python~~
 - ~~Currently does not have ball-prediction~~
 - ~~If a bot uses quickchats it will break~~
