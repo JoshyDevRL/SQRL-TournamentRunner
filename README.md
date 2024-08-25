@@ -82,11 +82,13 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - Fixed kickoff bug where the timer was incorrect
 - Added feature that automatically gets the name of the bot from the .cfg file
 - Send match id instead of pipe name to python sqrl_interface
+- Update [sqrl_python_interface](https://github.com/JoshyDevRL/sqrl_python_interface) and [pypi package](https://pypi.org/project/sqrl-python-interface) to 0.2.0
 
 ## Commit [ ecb5fef ]
 - Add full support for GoslingUtils and SkillQuest bots
 - Additional features such as the --copy and --file flags
 - Python autolaunch feature
+- Update [sqrl_python_interface](https://github.com/JoshyDevRL/sqrl_python_interface) and [pypi package](https://pypi.org/project/sqrl-python-interface) to 0.1.0
 
 ## Commit [ 9895800 ]
 - Start setup of the base framework
