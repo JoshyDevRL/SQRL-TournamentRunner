@@ -1,163 +1,162 @@
 #include "../include/python_interface.h"
 
-PythonInterface::PythonInterface(const std::string& pipeName) : pipeName(pipeName) {
-    hPipe = CreateNamedPipeA(
-        pipeName.c_str(),
-        PIPE_ACCESS_DUPLEX,
-        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-        1, 1024, 1024, 0, NULL);
+void VTD(char* pBuf, const Vec& vec, int& offset) {
+    memcpy(pBuf + offset, &vec.x, sizeof(float));
+    offset += sizeof(float);
+    memcpy(pBuf + offset, &vec.y, sizeof(float));
+    offset += sizeof(float);
+    memcpy(pBuf + offset, &vec.z, sizeof(float));
+    offset += sizeof(float);
+}
 
-    if (hPipe == INVALID_HANDLE_VALUE) {
-        std::cerr << "CreateNamedPipe failed. GetLastError = " << GetLastError() << std::endl;
-    }
+void RTD(char* pBuf, const Angle& vec, int& offset) {
+    memcpy(pBuf + offset, &vec.pitch, sizeof(float));
+    offset += sizeof(float);
+    memcpy(pBuf + offset, &vec.yaw, sizeof(float));
+    offset += sizeof(float);
+    memcpy(pBuf + offset, &vec.roll, sizeof(float));
+    offset += sizeof(float);
+}
+
+void F(char* pBuf, float f, int& offset) {
+    memcpy(pBuf + offset, &f, sizeof(float));
+    offset += sizeof(float);
+}
+
+void I(char* pBuf, int i, int& offset) {
+    memcpy(pBuf + offset, &i, sizeof(int));
+    offset += sizeof(int);
+}
+
+void B(char* pBuf, bool b, int& offset) {
+    memcpy(pBuf + offset, &b, sizeof(bool));
+    offset += sizeof(bool);
+}
+
+PythonInterface::PythonInterface(int matchId, int totalTicks)
+{
+    this->totalTicks = totalTicks;
+    shmName = std::format("Local\\SQRL_Python_{}", matchId); 
+    std::cout << std::format("Initializing SharedMemory module {} ...", shmName) << std::endl;
+    shm = new SharedMemory(shmName, size);
+    std::cout << "Successfully initialized the SharedMemory module" << std::endl;
+    blueBot = new PythonBot();
+    orangeBot = new PythonBot();
 }
 
 PythonInterface::~PythonInterface() {
-    if (hPipe != INVALID_HANDLE_VALUE) {
-        FlushFileBuffers(hPipe);
-        DisconnectNamedPipe(hPipe);
-        CloseHandle(hPipe);
-    }
 }
 
-bool PythonInterface::WaitForClient() {
-    BOOL connected = ConnectNamedPipe(hPipe, NULL) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
-    if (!connected) {
-        std::cerr << "ConnectNamedPipe failed. GetLastError = " << GetLastError() << std::endl;
-        return false;
-    }
-    return true;
-}
-
-bool PythonInterface::Write(const std::string& state) {
-    DWORD bytesWritten;
-    BOOL success = WriteFile(hPipe, state.c_str(), state.size() + 1, &bytesWritten, NULL);
-    if (!success || bytesWritten != state.size() + 1) {
-        std::cerr << "WriteFile failed. GetLastError = " << GetLastError() << std::endl;
-        return false;
-    }
-    return true;
-}
-
-bool PythonInterface::Read(std::string& action, CarControls* controller) {
-    const int totalBytes = 23; // 5 floats (20 bytes) + 3 booleans (3 bytes)
-    char buffer[totalBytes];
-    DWORD bytesRead;
-
-    // Read data from the pipe
-    BOOL success = ReadFile(hPipe, buffer, sizeof(buffer), &bytesRead, NULL);
-    if (!success || bytesRead != sizeof(buffer)) {
-        std::cerr << "ReadFile failed or read unexpected amount of data. GetLastError = " << GetLastError() << std::endl;
-        return false;
-    }
-    size_t offset = 0;
-    float floats[5];
-    std::memcpy(floats, buffer + offset, 5 * sizeof(float));
-    offset += 5 * sizeof(float);
-
-    bool bools[3];
-    std::memcpy(bools, buffer + offset, 3 * sizeof(bool));
-    offset += 3 * sizeof(bool);
-
-    controller->throttle = floats[0];
-    controller->steer = floats[1];
-    controller->pitch = floats[2];
-    controller->yaw = floats[3];
-    controller->roll = floats[4];
-
-    controller->jump = bools[0];
-    controller->boost = bools[1];
-    controller->handbrake = bools[2];
-    return true;
-}
-
-std::string PythonInterface::SerializeGamestate(Arena* arena, Car* blueCar, Car* orangeCar, int totalTicks, bool isKickoff) {
-    std::string binaryData;
-    auto appendData = [&](const void* data, size_t size) {
-        binaryData.append(reinterpret_cast<const char*>(data), size);
-    };
-    // Blue Car
+void PythonInterface::SendGameState(Arena* arena, BallPredTracker* ballPred, bool isKickoff, bool isOvertime, int blueScore, int orangeScore) {
+    char* pBuf = shm->GetPBuf();
+    int offset = 0;
+    // Cars
+    Car* blueCar = blueBot->car;
+    Car* orangeCar = orangeBot->car;
     CarState blueState = blueCar->GetState();
-    Vec blueCarPos = blueState.pos;
-    appendData(&blueCarPos.x, sizeof(float));
-    appendData(&blueCarPos.y, sizeof(float));
-    appendData(&blueCarPos.z, sizeof(float));
-    Angle bRot = Angle::FromRotMat(blueState.rotMat);
-    appendData(&bRot.pitch, sizeof(float));
-    appendData(&bRot.yaw, sizeof(float));
-    appendData(&bRot.roll, sizeof(float));
-    Vec blueCarVel = blueState.vel;
-    appendData(&blueCarVel.x, sizeof(float));
-    appendData(&blueCarVel.y, sizeof(float));
-    appendData(&blueCarVel.z, sizeof(float));
-    Vec blueCarAngVel = blueState.angVel;
-    appendData(&blueCarAngVel.x, sizeof(float));
-    appendData(&blueCarAngVel.y, sizeof(float));
-    appendData(&blueCarAngVel.z, sizeof(float));
-    appendData(&blueState.boost, sizeof(float));
-    int bteam = blueCar->team == Team::BLUE ? 0 : 1;
-    appendData(&bteam, sizeof(int));
-    appendData(&blueState.isDemoed, sizeof(bool));
-    appendData(&blueState.isOnGround, sizeof(bool));
-    appendData(&blueState.isSupersonic, sizeof(bool));
-    appendData(&blueState.hasJumped, sizeof(bool));
-    appendData(&blueState.hasDoubleJumped, sizeof(bool));
-    // Orange Car
     CarState orangeState = orangeCar->GetState();
-    Vec orangeCarPos = orangeState.pos;
-    appendData(&orangeCarPos.x, sizeof(float));
-    appendData(&orangeCarPos.y, sizeof(float));
-    appendData(&orangeCarPos.z, sizeof(float));
-    Angle oRot = Angle::FromRotMat(orangeState.rotMat);
-    appendData(&oRot.pitch, sizeof(float));
-    appendData(&oRot.yaw, sizeof(float));
-    appendData(&oRot.roll, sizeof(float));
-    Vec orangeCarVel = orangeState.vel;
-    appendData(&orangeCarVel.x, sizeof(float));
-    appendData(&orangeCarVel.y, sizeof(float));
-    appendData(&orangeCarVel.z, sizeof(float));
-    Vec orangeCarAngVel = orangeState.angVel;
-    appendData(&orangeCarAngVel.x, sizeof(float));
-    appendData(&orangeCarAngVel.y, sizeof(float));
-    appendData(&orangeCarAngVel.z, sizeof(float));
-    appendData(&orangeState.boost, sizeof(float));
-    int oteam = orangeCar->team == Team::BLUE ? 0 : 1;
-    appendData(&oteam, sizeof(int));
-    appendData(&orangeState.isDemoed, sizeof(bool));
-    appendData(&orangeState.isOnGround, sizeof(bool));
-    appendData(&orangeState.isSupersonic, sizeof(bool));
-    appendData(&orangeState.hasJumped, sizeof(bool));
-    appendData(&orangeState.hasDoubleJumped, sizeof(bool));
-    // Boost Pads
-    for (const BoostPad* pad : arena->GetBoostPads()) {
-        bool active = pad->GetState().isActive;
-        appendData(&active, sizeof(bool));
-        float timer = pad->GetState().cooldown;
-        appendData(&timer, sizeof(float));
+    VTD(pBuf, blueState.pos, offset);
+    RTD(pBuf, Angle::FromRotMat(blueState.rotMat), offset);
+    VTD(pBuf, blueState.vel, offset);
+    VTD(pBuf, blueState.angVel, offset);
+    VTD(pBuf, blueCar->config.hitboxSize, offset);
+    VTD(pBuf, blueCar->config.hitboxPosOffset, offset);
+    F(pBuf, blueState.boost, offset);
+    I(pBuf, -1, offset); //score info
+    I(pBuf, -1, offset); //score info
+    I(pBuf, -1, offset); //score info
+    I(pBuf, -1, offset); //score info
+    I(pBuf, -1, offset); //score info
+    I(pBuf, -1, offset); //score info
+    I(pBuf, -1, offset); //score info
+    I(pBuf, blueCar->team == Team::BLUE ? 0 : 1, offset);
+    B(pBuf, blueState.isDemoed, offset);
+    B(pBuf, blueState.isOnGround, offset);
+    B(pBuf, blueState.isSupersonic, offset);
+    B(pBuf, blueState.hasJumped, offset);
+    B(pBuf, blueState.hasDoubleJumped, offset);
+    VTD(pBuf, orangeState.pos, offset);
+    RTD(pBuf, Angle::FromRotMat(orangeState.rotMat), offset);
+    VTD(pBuf, orangeState.vel, offset);
+    VTD(pBuf, orangeState.angVel, offset);
+    VTD(pBuf, orangeCar->config.hitboxSize, offset);
+    VTD(pBuf, orangeCar->config.hitboxPosOffset, offset);
+    F(pBuf, orangeState.boost, offset);
+    I(pBuf, -1, offset); //score info
+    I(pBuf, -1, offset); //score info
+    I(pBuf, -1, offset); //score info
+    I(pBuf, -1, offset); //score info
+    I(pBuf, -1, offset); //score info
+    I(pBuf, -1, offset); //score info
+    I(pBuf, -1, offset); //score info
+    I(pBuf, orangeCar->team == Team::BLUE ? 0 : 1, offset);
+    B(pBuf, orangeState.isDemoed, offset);
+    B(pBuf, orangeState.isOnGround, offset);
+    B(pBuf, orangeState.isSupersonic, offset);
+    B(pBuf, orangeState.hasJumped, offset);
+    B(pBuf, orangeState.hasDoubleJumped, offset);
+    // Boosts
+    for (int i = 0; i < arena->GetBoostPads().size(); i++) {
+        B(pBuf, arena->GetBoostPads().at(i)->GetState().isActive, offset);
+        F(pBuf, arena->GetBoostPads().at(i)->GetState().cooldown, offset);
     }
     // Ball
     BallState ballState = arena->ball->GetState();
-    Vec ballPos = ballState.pos;
-    appendData(&ballPos.x, sizeof(float));
-    appendData(&ballPos.y, sizeof(float));
-    appendData(&ballPos.z, sizeof(float));
-    Vec ballVel = ballState.vel;
-    appendData(&ballVel.x, sizeof(float));
-    appendData(&ballVel.y, sizeof(float));
-    appendData(&ballVel.z, sizeof(float));
-    Vec ballAngVel = ballState.angVel;
-    appendData(&ballAngVel.x, sizeof(float));
-    appendData(&ballAngVel.y, sizeof(float));
-    appendData(&ballAngVel.z, sizeof(float));
+    VTD(pBuf, ballState.pos, offset);
+    VTD(pBuf, ballState.vel, offset);
+    VTD(pBuf, ballState.angVel, offset);
+    VTD(pBuf, Vec(0, 0, 0), offset); //hit pos
+    VTD(pBuf, Vec(0, 0, 0), offset); //hit normal
+    F(pBuf, -1, offset); //hit time
+    I(pBuf, -1, offset); //hit team
+    I(pBuf, -1, offset); //hit index
     // Game
-    int tick = arena->tickCount;
-    float time = tick / 120.0f;
-    appendData(&time, sizeof(float));
-    float timeRemaining = totalTicks / 120.0f - time;
-    appendData(&timeRemaining, sizeof(float));
-    bool overtime = totalTicks < tick;
-    appendData(&overtime, sizeof(bool));
-    appendData(&isKickoff, sizeof(bool));
-    appendData(&tick, sizeof(int));
-    return binaryData;
+    int tickCount = arena->tickCount;
+    float time = tickCount / 120.0f;
+    F(pBuf, time, offset);
+    F(pBuf, totalTicks / 120.0f - time, offset);
+    B(pBuf, isOvertime, offset);
+    B(pBuf, isKickoff, offset);
+    B(pBuf, isOvertime ? blueScore != orangeScore : totalTicks < tickCount && ballState.pos.z < 95, offset);
+    I(pBuf, tickCount, offset);
+    //teaminfo
+    // Ball Prediction
+    for (size_t i = 2; i < 722; i += 2) {
+        VTD(pBuf, ballPred->predData[i].pos, offset);
+        VTD(pBuf, ballPred->predData[i].vel, offset);
+        VTD(pBuf, ballPred->predData[i].angVel, offset);
+        F(pBuf, time + i / 120.0f, offset);
+    }
+    int sz = 14883;
+    I(pBuf, 360, sz);
+    sz = 14945;
+    I(pBuf, 2, sz); // make dynamic
+}
+
+void PythonInterface::SetControllers() {
+    blueBot->car->controls = blueControls;
+    orangeBot->car->controls = orangeControls;
+
+}
+
+void PythonInterface::GetControllers() {
+    char* pBuf = shm->GetPBuf();
+
+    memcpy(&blueControls.throttle, pBuf + 14895, sizeof(float));
+    memcpy(&blueControls.steer, pBuf + 14899, sizeof(float));
+    memcpy(&blueControls.pitch, pBuf + 14903, sizeof(float));
+    memcpy(&blueControls.yaw, pBuf + 14907, sizeof(float));
+    memcpy(&blueControls.roll, pBuf + 14911, sizeof(float));
+    memcpy(&blueControls.jump, pBuf + 14915, sizeof(bool));
+    memcpy(&blueControls.boost, pBuf + 14916, sizeof(bool));
+    memcpy(&blueControls.handbrake, pBuf + 14917, sizeof(bool));
+
+    memcpy(&orangeControls.throttle, pBuf + 14922, sizeof(float));
+    memcpy(&orangeControls.steer, pBuf + 14926, sizeof(float));
+    memcpy(&orangeControls.pitch, pBuf + 14930, sizeof(float));
+    memcpy(&orangeControls.yaw, pBuf + 14934, sizeof(float));
+    memcpy(&orangeControls.roll, pBuf + 14938, sizeof(float));
+    memcpy(&orangeControls.jump, pBuf + 14942, sizeof(bool));
+    memcpy(&orangeControls.boost, pBuf + 14943, sizeof(bool));
+    memcpy(&orangeControls.handbrake, pBuf + 14944, sizeof(bool));
 }

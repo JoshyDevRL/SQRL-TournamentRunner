@@ -93,32 +93,15 @@ void TraverseAndProcess(const fs::path& dirPath) {
     for (const auto& entry : fs::recursive_directory_iterator(dirPath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".py") {
             ProcessPythonFile(entry.path(), "rlbot.", "sqrl_python_interface.");
-            std::cout << "Processed file: " << entry.path() << std::endl;
+            //std::cout << "Processed file: " << entry.path() << std::endl;
         }
     }
 }
 
 void ModifyPythonBot(const std::string& filename) {
-    std::string mainCode = R"(if __name__ == '__main__':
-    import sys
-    if len(sys.argv) < 4:
-        print("Error: Missing parameters")
-        sys.exit(1)
-    index = int(sys.argv[1])
-    team = int(sys.argv[2])
-    name = str(sys.argv[3])
-    bot = Bot(index, team, name)
-    bot.initialize_agent()
-    while True:
-        packet = bot.get_packet()
-        controller = bot.get_output(packet)
-        bot.send_controller(controller)
-)";
-
-    std::string initCode = R"(def __init__(self, index, team, name):
+    std::string initCode = R"(def __init__(self, index, team, name, match_id):
         super().__init__()
-        pipe_name = name + "_" + str(index)
-        self.set_vars(index, team, name, pipe_name)
+        self.set_vars(index, team, name, match_id)
 )";
 
     std::string content = ReadFile(filename);
@@ -126,25 +109,48 @@ void ModifyPythonBot(const std::string& filename) {
         std::cerr << "Failed to read file: " << filename << std::endl;
         return;
     }
+    std::string className;
+    if (ContainsClassWithInheritance(content, className)) {
+        std::string initString = "def __init__(self, index, team, name, match_id):";
+        if (!ContainsString(filename, initString)) {
+            std::cout << "Adding the __init__ block" << std::endl;
+            std::string className;
+            if (ContainsClassWithInheritance(content, className)) {
+                std::cout << "Valid class found: " << className << std::endl;
+                InsertCodeAfterClass(content, className, initCode);
+                WriteFile(filename, content);
+            }
+        }
+    }
+    else {
+        std::cout << "No class valid class found" << std::endl;
+    }
+    std::string classn = className.substr(0, className.find('('));
+    std::string mainCode = std::format(R"(if __name__ == '__main__':
+    import sys
+    if len(sys.argv) < 5:
+        print("Error: Missing parameters")
+        sys.exit(1)
+    index = int(sys.argv[1])
+    team = int(sys.argv[2])
+    name = str(sys.argv[3])
+    match_id = str(sys.argv[4])
+    bot = {}(index, team, name, match_id)
+    bot.initialize_agent()
+    last_fn = -1
+    while True:
+        packet = bot.get_packet()
+        if packet.game_info.frame_num != last_fn:
+            last_fn = packet.game_info.frame_num
+            packet = bot.get_packet()
+            controller = bot.get_output(packet)
+            bot.send_controller(team, controller)
+    )", classn);
 
     std::string mainString = "if __name__ == '__main__':";
     if (!ContainsString(filename, mainString)) {
         std::cout << "Adding the '__main__' block" << std::endl;
         content += "\n" + mainCode;
-    }
-
-    std::string initString = "def __init__(self, index, team, name):";
-    if (!ContainsString(filename, initString)) {
-        std::cout << "Adding the __init__ block" << std::endl;
-        std::string className;
-        if (ContainsClassWithInheritance(content, className)) {
-            std::cout << "Valid class found: " << className << std::endl;
-            InsertCodeAfterClass(content, className, initCode);
-            WriteFile(filename, content);
-        }
-        else {
-            std::cout << "No class valid class found" << std::endl;
-        }
     }
 
     WriteFile(filename, content);

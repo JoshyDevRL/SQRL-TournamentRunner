@@ -2,26 +2,34 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>  
 #include <iostream>
 #include <string>
-#include <chrono>
 #include "utils.h"
 #include "RocketSim.h"
+#include "shared_memory.h"
+#include "python_bot.h"
+#include "DataStream/DataStreamOut.h"
+#include "Sim/BallPredTracker/BallPredTracker.h"
 
 using namespace RocketSim;
 
 class PythonInterface {
 public:
-    HANDLE hPipe;
-    std::string pipeName;
+    const size_t size = 14952;
 
-    PythonInterface(const std::string& pipeName);
+    int totalTicks;
+    std::string shmName;
+    SharedMemory* shm;
+    PythonBot* blueBot;
+    PythonBot* orangeBot;
+    CarControls blueControls;
+    CarControls orangeControls;
+
+    PythonInterface(int matchId, int totalTicks);
     ~PythonInterface();
 
-    bool WaitForClient();
-    bool Write(const std::string& state);
-    bool Read(std::string& action, CarControls* controller);
-    static std::string SerializeGamestate(Arena* arena, Car* blueCar, Car* orangeCar, int totalTicks, bool isKickoff);
+    void SendGameState(Arena* arena, BallPredTracker* ballPred, bool isKickoff, bool isOvertime, int blueScore, int orangeScore);
+    void SetControllers();
+    void GetControllers();
+
 };

@@ -15,6 +15,22 @@ using json = nlohmann::json;
 
 namespace fs = std::filesystem;
 
+std::string GetBotName(fs::path path) {
+    for (const auto& entry : fs::directory_iterator(path)) {
+        if (entry.path().extension() == ".cfg") {
+            std::ifstream file(entry.path());
+            std::string line;
+            while (std::getline(file, line)) {
+                size_t pos = line.find("name = ");
+                if (pos != std::string::npos) {
+                    return line.substr(pos + 7);
+                }
+            }
+        }
+    }
+    return "";
+}
+
 bool FileExists(const std::string& filePath) {
     return fs::exists(filePath);
 }
@@ -27,9 +43,8 @@ int main(int argc, char* argv[]) {
     int ticks = 36000;
     bool render = false;
     bool copyFiles = false;
-    std::string blueName = "example";
-    std::string orangeName = "example";
-    fs::path filePath = "";
+    fs::path blueFilePath = "";
+    fs::path orangeFilePath = "";
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--render") {
@@ -38,10 +53,17 @@ int main(int argc, char* argv[]) {
         if (arg == "--copy") {
             copyFiles = true;
         }
-        if (arg == "--file" && i + 1 < argc) {
+        if (arg == "--blue" && i + 1 < argc) {
             arg = argv[i + 1];
             try {
-                filePath = arg;
+                blueFilePath = arg;
+            }
+            catch (...) {}
+        }
+        if (arg == "--orange" && i + 1 < argc) {
+            arg = argv[i + 1];
+            try {
+                orangeFilePath = arg;
             }
             catch (...) {}
         }
@@ -54,34 +76,43 @@ int main(int argc, char* argv[]) {
     }
     Init("./meshes");
 
-    if (filePath == "" || !FileExists(filePath.string())) {
+    if (blueFilePath == "" || orangeFilePath == "" || !FileExists(blueFilePath.string()) || !FileExists(orangeFilePath.string())) {
         std::cerr << "[SQRL] File path invalid" << std::endl;
         exit(1);
     }
     if (copyFiles) {
-        filePath = CopyDirectory(GetParentDirectory(filePath.string()), fs::current_path() / GetParentDirectory(filePath.string()).filename().string()) / GetFileName(filePath);
+        blueFilePath = CopyDirectory(GetParentDirectory(blueFilePath.string()), fs::current_path() / GetParentDirectory(blueFilePath.string()).filename().string()) / GetFileName(blueFilePath);
+        orangeFilePath = CopyDirectory(GetParentDirectory(orangeFilePath.string()), fs::current_path() / GetParentDirectory(orangeFilePath.string()).filename().string()) / GetFileName(orangeFilePath);
     }
 
-    PythonBot* blueBot = new PythonBot(blueName);
-    PythonBot* orangeBot = new PythonBot(orangeName);
-    std::cout << "Checking python file at: " << filePath.string() << std::endl;
-    ModifyPythonBot(filePath.string());
+    std::cout << "Checking python file at: " << blueFilePath.string() << std::endl;
+    ModifyPythonBot(blueFilePath.string());
+    std::cout << "Checking python file at: " << orangeFilePath.string() << std::endl;
+    ModifyPythonBot(orangeFilePath.string());
 
-    std::string blueCmd = "py " + filePath.string() + " 0 0 " + blueName;
-    std::string orangeCmd = "py " + filePath.string() + " 1 1 " + orangeName;
+    std::vector<std::string> botNames;
+    botNames.push_back(GetBotName(fs::current_path() / GetParentDirectory(blueFilePath.string()).filename()));
+    botNames.push_back(GetBotName(fs::current_path() / GetParentDirectory(orangeFilePath.string()).filename()));
+
+    int matchId = 0;
+
+    std::replace(botNames[0].begin(), botNames[0].end(), ' ', '$');
+    std::replace(botNames[1].begin(), botNames[1].end(), ' ', '$');
+
+    std::string blueCmd = "py " + blueFilePath.string() + std::format(" 0 0 {} {}", botNames[0], matchId);
+    std::string orangeCmd = "py " + orangeFilePath.string() + std::format(" 1 1 {} {}", botNames[1], matchId);
 
     std::thread(startPythonInterface, blueCmd).detach();
     std::thread(startPythonInterface, orangeCmd).detach();
 
-    Match match = Match(blueBot, orangeBot, ticks, render);
-
+    Match match = Match(0, botNames, ticks, render);
     auto startTime = std::chrono::steady_clock::now();
+    std::cout << "Starting match..." << std::endl;
     match.Run();
-    blueBot->pythonInterface->Write("EXIT");
-    orangeBot->pythonInterface->Write("EXIT");
     auto deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - startTime).count();
-    std::cout << "[SQRL] Time Elapsed: " << deltaTime << "ms" << std::endl;
-    std::cout << "[SQRL] Score: " << match.blueScore << " | " << match.orangeScore << std::endl;
+    std::cout << "Time Elapsed: " << deltaTime << "ms" << std::endl;
+    std::cout << "Score: " << match.blueScore << " | " << match.orangeScore << std::endl;
+    //std::cout << "Blue shots: " << match.pythonInterface->blueBot->tracker->matchShots << std::endl;
  
     return 0;
 }   

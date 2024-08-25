@@ -1,21 +1,20 @@
 #pragma once
 
 #include "RocketSim.h"
-#include "python_interface.h"
 #include "utils.h"
+#include <Sim/BallPredTracker/BallPredTracker.h>
+#include "event_tracker.h"
 
 using namespace RocketSim;
 
 class PythonBot {
 public:
 	Car* car;
-	PythonInterface* pythonInterface;
 	std::string Name;
-	int totalTicks;
+	InfoTracker* tracker;
 
-	PythonBot(std::string name);
-		
-	void Initialize(int totalTicks);
-	void SetController(Arena* arena, Car* opp, bool isKickoff);
+	PythonBot();
+
+	void Initialize(std::string name);
 
 };
