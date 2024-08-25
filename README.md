@@ -22,7 +22,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 
 # Features
 - Can start a 1v1 match for x amount of ticks (1 second = 120 ticks). Default is 36.000 ticks (5 minutes)
-- **--file path_to_your_bot_py** flag guides the program to your bot file > [REQUIRED]
+- **--blue / --orange path_to_your_bot_py** flag guides the program to your bot file > [REQUIRED]
 - **--ticks x** flag to set the desired amount of ticks to run a match for, where **x** is the amount of ticks > [OPTIONAL]
 - **--render** flag to render the match happening in [RocketSimVis](https://github.com/ZealanL/RocketSimVis) (Slows down the game to real time) > [OPTIONAL]
 - **--copy** flag to copy your bot folder to the exe path so it doesn't modify your main code files > [OPTIONAL]
