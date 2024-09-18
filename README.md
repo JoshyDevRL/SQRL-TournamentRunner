@@ -47,6 +47,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 > **1 thread | 1v1 | SkillQuest PY BOT + Ball Prediction | 36.000 ticks (5 minutes) | Shared Memory |> ~115.000 ms**
 
 # Near-Future
+- Split up the codebase into different libraries, e.g. running matches and the interface
 - Add player info tracker, eg. shots, saves, assists [ADDING NEXT UPDATE]
 - Simple TUI (text-based user interface)
 - Add Full RLBot Python bot support
@@ -65,6 +66,7 @@ A tournament runner that utilizes RocketSim to simulate matches specifically bui
 - Add RLBot C++ bot support
 - Add RLBot ML bot support
 - API for GUI interface
+- Linux / Unix support
 - Add more variety game modes, eg. uneven teams and some extra-modes
 
 # Development
