@@ -1,6 +1,7 @@
 # SQRL-TournamentRunner
 
 # < MOVING TO https://github.com/RLGameSim >
+# Won't recieve any further updates unless necessary
 
 A tournament runner that utilizes RocketSim to simulate matches specifically built for SkillQuest
 - Currently still a W.I.P.
